@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = app = FastAPI(
+app = FastAPI(
     title="FastAPI + React",
     docs_url="/api/docs",
     openapi_url="/api/openapi.json"
