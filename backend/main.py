@@ -8,7 +8,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(title="FastAPI + React")
+app = FastAPI(
+    title="FastAPI + React",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json"
+)
 
 
 app.add_middleware(
