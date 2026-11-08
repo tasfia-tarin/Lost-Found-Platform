@@ -1,35 +1,22 @@
-import { type FormEvent, useEffect, useState } from "react"
+﻿import { type FormEvent, useEffect, useState } from "react"
 
-const API_BASE_URL = ""
+import {
+  createItem,
+  deleteItem as deleteItemService,
+  getItem,
+  getItems,
+  updateItem,
+} from "./services/api"
 
-interface Item {
-  id: number
-  title: string
-  description: string | null
-  category: string | null
-  status: string
-  location: string | null
-  contact_info: string | null
-  created_at: string
-}
+import {
+  emptyForm,
+  type Item,
+  type ItemForm,
+} from "./types/item"
 
-interface ItemForm {
-  title: string
-  description: string
-  category: string
-  status: string
-  location: string
-  contact_info: string
-}
-
-const emptyForm: ItemForm = {
-  title: "",
-  description: "",
-  category: "",
-  status: "lost",
-  location: "",
-  contact_info: "",
-}
+import ItemFormComponent from "./components/ItemForm"
+import ItemList from "./components/ItemList"
+import ItemDetails from "./components/ItemDetails"
 
 export default function App() {
   const [items, setItems] = useState<Item[]>([])
@@ -48,14 +35,8 @@ export default function App() {
     setError("")
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/items`)
-
-      if (!response.ok) {
-        throw new Error("Failed to load items")
-      }
-
-      const data: { items: Item[] } = await response.json()
-      setItems(data.items)
+      const data = await getItems()
+      setItems(data)
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong"
@@ -69,6 +50,17 @@ export default function App() {
     loadItems()
   }, [])
 
+  // Handle form field changes
+  function handleFieldChange(
+    field: keyof ItemForm,
+    value: string
+  ) {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }))
+  }
+
   // Create or Update item
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -78,30 +70,13 @@ export default function App() {
     setSaving(true)
 
     try {
-      const url =
-        editingId !== null
-          ? `${API_BASE_URL}/api/items/${editingId}`
-          : `${API_BASE_URL}/api/items`
-
-      const response = await fetch(url, {
-        method: editingId !== null ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Failed to save item")
+      if (editingId !== null) {
+        await updateItem(editingId, form)
+        setMessage("Item updated successfully!")
+      } else {
+        await createItem(form)
+        setMessage("Item added successfully!")
       }
-
-      setMessage(
-        editingId !== null
-          ? "Item updated successfully!"
-          : "Item added successfully!"
-      )
 
       setForm(emptyForm)
       setEditingId(null)
@@ -122,18 +97,8 @@ export default function App() {
     setError("")
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/items/${id}`
-      )
-
-      const data: { item: Item; detail?: string } =
-        await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Failed to load item")
-      }
-
-      setSelectedItem(data.item)
+      const item = await getItem(id)
+      setSelectedItem(item)
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong"
@@ -173,18 +138,7 @@ export default function App() {
     setMessage("")
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/items/${id}`,
-        {
-          method: "DELETE",
-        }
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Failed to delete item")
-      }
+      await deleteItemService(id)
 
       setMessage("Item deleted successfully!")
 
@@ -214,7 +168,6 @@ export default function App() {
 
   return (
     <div className="app-shell">
-
       <header className="topbar">
         <div className="brand">
           <span>🔎</span>
@@ -244,243 +197,34 @@ export default function App() {
       )}
 
       <div className="content-grid">
+        <ItemFormComponent
+          form={form}
+          editingId={editingId}
+          saving={saving}
+          onFieldChange={handleFieldChange}
+          onSubmit={handleSubmit}
+          onCancel={cancelEdit}
+        />
 
-        {/* Item Form */}
-
-        <section className="panel">
-          <h2>
-            {editingId !== null ? "Edit Item" : "Report an Item"}
-          </h2>
-
-          <form onSubmit={handleSubmit}>
-
-            <div className="form-grid">
-
-              <div className="field">
-                <label>Item Title *</label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={(e) =>
-                    setForm({ ...form, title: e.target.value })
-                  }
-                  placeholder="Example: Black Wallet"
-                  required
-                />
-              </div>
-
-              <div className="field">
-                <label>Category</label>
-                <input
-                  type="text"
-                  value={form.category}
-                  onChange={(e) =>
-                    setForm({ ...form, category: e.target.value })
-                  }
-                  placeholder="Example: Accessories"
-                />
-              </div>
-
-              <div className="field">
-                <label>Status *</label>
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({ ...form, status: e.target.value })
-                  }
-                >
-                  <option value="lost">Lost</option>
-                  <option value="found">Found</option>
-                </select>
-              </div>
-
-              <div className="field">
-                <label>Location</label>
-                <input
-                  type="text"
-                  value={form.location}
-                  onChange={(e) =>
-                    setForm({ ...form, location: e.target.value })
-                  }
-                  placeholder="Where was it lost or found?"
-                />
-              </div>
-
-              <div className="field">
-                <label>Description</label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
-                  placeholder="Describe the item..."
-                  rows={4}
-                />
-              </div>
-
-              <div className="field">
-                <label>Contact Information</label>
-                <input
-                  type="text"
-                  value={form.contact_info}
-                  onChange={(e) =>
-                    setForm({ ...form, contact_info: e.target.value })
-                  }
-                  placeholder="Phone number or email"
-                />
-              </div>
-
-            </div>
-
-            <button
-              type="submit"
-              className="primary-btn"
-              disabled={saving}
-            >
-              {saving
-                ? "Saving..."
-                : editingId !== null
-                  ? "Update Item"
-                  : "Add Item"}
-            </button>
-
-            {editingId !== null && (
-              <button
-                type="button"
-                className="secondary-btn"
-                onClick={cancelEdit}
-              >
-                Cancel Edit
-              </button>
-            )}
-
-          </form>
-        </section>
-
-        {/* Items List */}
-
-        <section className="panel">
-          <h2>Lost & Found Items</h2>
-
-          {loading ? (
-            <p className="loading">Loading items...</p>
-          ) : items.length === 0 ? (
-            <div className="empty-state">
-              <p>No items have been reported yet.</p>
-              <p>Be the first to report an item!</p>
-            </div>
-          ) : (
-            <div className="item-grid">
-
-              {items.map((item) => (
-                <article className="item-card" key={item.id}>
-
-                  <span
-                    className={`status ${
-                      item.status === "found" ? "found" : ""
-                    }`}
-                  >
-                    {item.status.toUpperCase()}
-                  </span>
-
-                  <h3>{item.title}</h3>
-
-                  <p>
-                    <strong>Category:</strong>{" "}
-                    {item.category || "Not specified"}
-                  </p>
-
-                  <p>
-                    <strong>Location:</strong>{" "}
-                    {item.location || "Not specified"}
-                  </p>
-
-                  <div className="card-actions">
-
-                    <button
-                      className="secondary-btn"
-                      onClick={() => viewItem(item.id)}
-                    >
-                      View
-                    </button>
-
-                    <button
-                      className="secondary-btn"
-                      onClick={() => editItem(item)}
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      className="delete-btn"
-                      onClick={() => deleteItem(item.id)}
-                    >
-                      Delete
-                    </button>
-
-                  </div>
-
-                </article>
-              ))}
-
-            </div>
-          )}
-        </section>
-
+        <ItemList
+          items={items}
+          loading={loading}
+          onView={viewItem}
+          onEdit={editItem}
+          onDelete={deleteItem}
+        />
       </div>
 
-      {/* Selected Item Details */}
-
       {selectedItem && (
-        <section className="panel details-panel">
-
-          <h2>Item Details</h2>
-
-          <h3>{selectedItem.title}</h3>
-
-          <p>
-            <strong>Description:</strong>{" "}
-            {selectedItem.description || "Not provided"}
-          </p>
-
-          <p>
-            <strong>Category:</strong>{" "}
-            {selectedItem.category || "Not specified"}
-          </p>
-
-          <p>
-            <strong>Status:</strong> {selectedItem.status}
-          </p>
-
-          <p>
-            <strong>Location:</strong>{" "}
-            {selectedItem.location || "Not specified"}
-          </p>
-
-          <p>
-            <strong>Contact:</strong>{" "}
-            {selectedItem.contact_info || "Not provided"}
-          </p>
-
-          <p>
-            <strong>Reported on:</strong>{" "}
-            {new Date(selectedItem.created_at).toLocaleString()}
-          </p>
-
-          <button
-            className="secondary-btn"
-            onClick={() => setSelectedItem(null)}
-          >
-            Close Details
-          </button>
-
-        </section>
+        <ItemDetails
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
       )}
 
       <footer>
         <p>Lost & Found Platform | CSE Project 2026</p>
       </footer>
-
     </div>
   )
 }
