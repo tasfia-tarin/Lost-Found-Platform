@@ -1,11 +1,16 @@
 from datetime import datetime, timedelta, timezone
 
 import jwt
+import secrets
+import hashlib
 from fastapi import HTTPException, status
 
-from auth.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE
-
-
+from auth.config import (
+    SECRET_KEY,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE,
+    REFRESH_TOKEN_EXPIRE
+)
 def create_access_token(user_id: int, role: str) -> str:
     now = datetime.now(timezone.utc)
 
@@ -13,11 +18,17 @@ def create_access_token(user_id: int, role: str) -> str:
         "sub": str(user_id),
         "role": role,
         "iat": now,
+        "iat_ms": int(now.timestamp() * 1000),
         "exp": now + ACCESS_TOKEN_EXPIRE,
         "type": "access",
     }
 
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(
+        payload,
+        SECRET_KEY,
+        algorithm=ALGORITHM
+    )
+
 
 
 def verify_access_token(token: str) -> dict:
@@ -47,3 +58,11 @@ def verify_access_token(token: str) -> dict:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
         )
+def create_refresh_token() -> str:
+    return secrets.token_urlsafe(64)
+
+
+def hash_refresh_token(token: str) -> str:
+    return hashlib.sha256(
+        token.encode("utf-8")
+    ).hexdigest()

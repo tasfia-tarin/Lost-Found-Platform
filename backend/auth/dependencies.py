@@ -36,6 +36,28 @@ def get_current_user(
             detail="Your account has been banned",
         )
 
+    # Reject access tokens issued before password change
+    password_changed_at = user.get("password_changed_at")
+
+    if password_changed_at is not None:
+        token_issued_at = payload.get("iat_ms")
+
+        if token_issued_at is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session expired. Please log in again.",
+            )
+
+        changed_at_ms = int(
+            password_changed_at.timestamp() * 1000
+        )
+
+        if token_issued_at <= changed_at_ms:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session expired. Please log in again.",
+            )
+
     return {
         "id": user["id"],
         "email": user["email"],

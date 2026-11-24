@@ -1,3 +1,4 @@
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -16,3 +17,12 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: str
     is_banned: bool
+
+
+class ProfileUpdateRequest(BaseModel):
+    email: EmailStr | None = None
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8, max_length=128)

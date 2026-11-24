@@ -61,36 +61,58 @@ def create_item(item: ItemCreate, user_id: int):
     return row_to_item(row)
              
 
-
-def get_items():
+def get_items(user_id: int, is_admin: bool):
     with get_database_connection() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT id, title, description, category, status,
-                       location, contact_info, created_at
-                FROM public.items
-                ORDER BY created_at DESC
-                """
-            )
+            if is_admin:
+                cursor.execute(
+                    """
+                    SELECT id, title, description, category, status,
+                           location, contact_info, created_at
+                    FROM public.items
+                    ORDER BY created_at DESC
+                    """
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id, title, description, category, status,
+                           location, contact_info, created_at
+                    FROM public.items
+                    WHERE user_id = %s
+                    ORDER BY created_at DESC
+                    """,
+                    (user_id,)
+                )
 
             rows = cursor.fetchall()
 
     return [row_to_item(row) for row in rows]
 
 
-def get_item(item_id: int):
+def get_item(item_id: int, user_id: int, is_admin: bool):
     with get_database_connection() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT id, title, description, category, status,
-                       location, contact_info, created_at
-                FROM public.items
-                WHERE id = %s
-                """,
-                (item_id,)
-            )
+            if is_admin:
+                cursor.execute(
+                    """
+                    SELECT id, title, description, category, status,
+                           location, contact_info, created_at
+                    FROM public.items
+                    WHERE id = %s
+                    """,
+                    (item_id,)
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id, title, description, category, status,
+                           location, contact_info, created_at
+                    FROM public.items
+                    WHERE id = %s AND user_id = %s
+                    """,
+                    (item_id, user_id)
+                )
 
             row = cursor.fetchone()
 

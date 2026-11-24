@@ -8,6 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers.items import router as items_router
 from auth.routes import router as auth_router
+from admin.routes import router as admin_router
+from routers.groups import router as groups_router
 
 load_dotenv()
 
@@ -30,6 +32,8 @@ app.add_middleware(
 
 app.include_router(items_router)
 app.include_router(auth_router)
+app.include_router(admin_router)
+app.include_router(groups_router)
 
 
 @app.get("/api/health")
@@ -65,10 +69,10 @@ def test_database():
             "test_result": result[0]
         }
 
-    except Exception as error:
+    except Exception:
         return {
             "status": "error",
-            "message": str(error)
+            "message": "Database connection failed"
         }
 
 
