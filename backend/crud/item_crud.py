@@ -33,14 +33,15 @@ def row_to_item(row):
     }
 
 
-def create_item(item: ItemCreate):
+def create_item(item: ItemCreate, user_id: int):
     with get_database_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
                 """
                 INSERT INTO public.items
-                (title, description, category, status, location, contact_info)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                (title, description, category, status, location,
+                 contact_info, user_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING id, title, description, category, status,
                           location, contact_info, created_at
                 """,
@@ -50,39 +51,81 @@ def create_item(item: ItemCreate):
                     item.category,
                     item.status,
                     item.location,
-                    item.contact_info
+                    item.contact_info,
+                    user_id
                 )
             )
 
             row = cursor.fetchone()
 
     return row_to_item(row)
+             
 
-
-def get_items():
+def get_items(user_id: int, is_admin: bool):
     with get_database_connection() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT id, title, description, category, status,
-                       location, contact_info, created_at
-                FROM public.items
-                ORDER BY created_at DESC
-                """
-            )
+            if is_admin:
+                cursor.execute(
+                    """
+                    SELECT id, title, description, category, status,
+                           location, contact_info, created_at
+                    FROM public.items
+                    ORDER BY created_at DESC
+                    """
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id, title, description, category, status,
+                           location, contact_info, created_at
+                    FROM public.items
+                    WHERE user_id = %s
+                    ORDER BY created_at DESC
+                    """,
+                    (user_id,)
+                )
 
             rows = cursor.fetchall()
 
     return [row_to_item(row) for row in rows]
 
 
-def get_item(item_id: int):
+def get_item(item_id: int, user_id: int, is_admin: bool):
     with get_database_connection() as connection:
         with connection.cursor() as cursor:
+            if is_admin:
+                cursor.execute(
+                    """
+                    SELECT id, title, description, category, status,
+                           location, contact_info, created_at
+                    FROM public.items
+                    WHERE id = %s
+                    """,
+                    (item_id,)
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id, title, description, category, status,
+                           location, contact_info, created_at
+                    FROM public.items
+                    WHERE id = %s AND user_id = %s
+                    """,
+                    (item_id, user_id)
+                )
+
+            row = cursor.fetchone()
+
+    return row_to_item(row)
+
+
+def update_item(item_id: int, item: ItemCreate, user_id: int, is_admin: bool):
+    with get_database_connection() as connection:
+        with connection.cursor() as cursor:
+
             cursor.execute(
                 """
-                SELECT id, title, description, category, status,
-                       location, contact_info, created_at
+                SELECT user_id
                 FROM public.items
                 WHERE id = %s
                 """,
@@ -91,12 +134,14 @@ def get_item(item_id: int):
 
             row = cursor.fetchone()
 
-    return row_to_item(row)
+            if row is None:
+                return None
 
+            owner_id = row[0]
 
-def update_item(item_id: int, item: ItemCreate):
-    with get_database_connection() as connection:
-        with connection.cursor() as cursor:
+            if owner_id != user_id and not is_admin:
+                raise PermissionError("You can only update your own items")
+
             cursor.execute(
                 """
                 UPDATE public.items
@@ -121,14 +166,34 @@ def update_item(item_id: int, item: ItemCreate):
                 )
             )
 
-            row = cursor.fetchone()
+            updated_row = cursor.fetchone()
 
-    return row_to_item(row)
+    return row_to_item(updated_row)
 
 
-def delete_item(item_id: int):
+def delete_item(item_id: int, user_id: int, is_admin: bool):
     with get_database_connection() as connection:
         with connection.cursor() as cursor:
+
+            cursor.execute(
+                """
+                SELECT user_id
+                FROM public.items
+                WHERE id = %s
+                """,
+                (item_id,)
+            )
+
+            row = cursor.fetchone()
+
+            if row is None:
+                return None
+
+            owner_id = row[0]
+
+            if owner_id != user_id and not is_admin:
+                raise PermissionError("You can only delete your own items")
+
             cursor.execute(
                 """
                 DELETE FROM public.items
@@ -138,6 +203,6 @@ def delete_item(item_id: int):
                 (item_id,)
             )
 
-            row = cursor.fetchone()
+            deleted_row = cursor.fetchone()
 
-    return row[0] if row else None
+    return deleted_row[0] if deleted_row else None
