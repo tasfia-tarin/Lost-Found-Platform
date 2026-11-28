@@ -18,6 +18,7 @@ import {
   type ItemForm,
 } from "./types/item"
 
+import GroupManagement from "./components/GroupManagement"
 import ItemFormComponent from "./components/ItemForm"
 import ItemList from "./components/ItemList"
 import ItemDetails from "./components/ItemDetails"
@@ -303,6 +304,7 @@ export default function App() {
       )}
 
       {/* Item Management */}
+      <GroupManagement />
       <div className="content-grid">
 
         <ItemFormComponent

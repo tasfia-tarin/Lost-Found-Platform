@@ -524,3 +524,62 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+
+
+/* Group Management */
+.group-management {
+  display: grid;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.group-list-panel {
+  margin-top: 4px;
+}
+
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.group-card {
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.group-card h3 {
+  margin-top: 0;
+  color: #1e3a8a;
+}
+
+.group-card p {
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+.group-card .delete-btn {
+  margin-top: 12px;
+}
+
+.group-management textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .group-grid {
+    grid-template-columns: 1fr;
+  }
+}

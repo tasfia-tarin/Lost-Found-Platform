@@ -338,3 +338,229 @@ export async function getSecurityLogs(): Promise<unknown[]> {
   const data = await readResponse<{ logs: unknown[] }>(response)
   return data.logs
 }
+
+
+// ===============================
+// GROUP MANAGEMENT API FUNCTIONS
+// ===============================
+
+export interface Group {
+  id: number
+  name: string
+  description: string
+  owner_id: number
+  created_at: string
+  member_role: string
+}
+
+export interface GroupMember {
+  user_id: number
+  email: string
+  member_role: string
+  can_read_items: boolean
+  can_create_items: boolean
+  can_update_items: boolean
+  can_delete_items: boolean
+  added_at: string
+}
+
+export interface GroupItem {
+  id: number
+  title: string
+  description: string
+  category: string
+  status: string
+  location: string
+  contact_info: string
+  created_at: string
+  owner_id: number
+  shared_by: number
+  shared_at: string
+}
+
+// GET MY GROUPS
+export async function getGroups(): Promise<Group[]> {
+  const response = await apiRequest("/api/groups/")
+  return readResponse<Group[]>(response)
+}
+
+// CREATE GROUP
+export async function createGroup(
+  name: string,
+  description: string
+): Promise<Group> {
+  const response = await apiRequest("/api/groups/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name, description }),
+  })
+
+  return readResponse<Group>(response)
+}
+
+// UPDATE GROUP
+export async function updateGroup(
+  groupId: number,
+  name: string,
+  description: string
+): Promise<Group> {
+  const response = await apiRequest(`/api/groups/${groupId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name, description }),
+  })
+
+  return readResponse<Group>(response)
+}
+
+// DELETE GROUP
+export async function deleteGroup(groupId: number): Promise<void> {
+  const response = await apiRequest(`/api/groups/${groupId}`, {
+    method: "DELETE",
+  })
+
+  await readResponse(response)
+}
+
+// GET GROUP MEMBERS
+export async function getGroupMembers(
+  groupId: number
+): Promise<GroupMember[]> {
+  const response = await apiRequest(
+    `/api/groups/${groupId}/members`
+  )
+
+  return readResponse<GroupMember[]>(response)
+}
+
+// ADD GROUP MEMBER
+export async function addGroupMember(
+  groupId: number,
+  email: string
+): Promise<void> {
+  const response = await apiRequest(
+    `/api/groups/${groupId}/members`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    }
+  )
+
+  await readResponse(response)
+}
+
+// UPDATE MEMBER PERMISSIONS
+export async function updateGroupMemberPermissions(
+  groupId: number,
+  memberId: number,
+  permissions: {
+    can_read_items: boolean
+    can_create_items: boolean
+    can_update_items: boolean
+    can_delete_items: boolean
+  }
+): Promise<void> {
+  const response = await apiRequest(
+    `/api/groups/${groupId}/members/${memberId}/permissions`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(permissions),
+    }
+  )
+
+  await readResponse(response)
+}
+
+// REMOVE GROUP MEMBER
+export async function removeGroupMember(
+  groupId: number,
+  memberId: number
+): Promise<void> {
+  const response = await apiRequest(
+    `/api/groups/${groupId}/members/${memberId}`,
+    {
+      method: "DELETE",
+    }
+  )
+
+  await readResponse(response)
+}
+
+// SHARE ITEM WITH GROUP
+export async function shareItemWithGroup(
+  groupId: number,
+  itemId: number
+): Promise<void> {
+  const response = await apiRequest(
+    `/api/groups/${groupId}/items`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ item_id: itemId }),
+    }
+  )
+
+  await readResponse(response)
+}
+
+// GET SHARED ITEMS
+export async function getGroupItems(
+  groupId: number
+): Promise<GroupItem[]> {
+  const response = await apiRequest(
+    `/api/groups/${groupId}/items`
+  )
+
+  return readResponse<GroupItem[]>(response)
+}
+
+// UPDATE SHARED ITEM
+export async function updateGroupItem(
+  groupId: number,
+  itemId: number,
+  data: Partial<Pick<
+    GroupItem,
+    "title" | "description" | "category" |
+    "status" | "location" | "contact_info"
+  >>
+): Promise<void> {
+  const response = await apiRequest(
+    `/api/groups/${groupId}/items/${itemId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  )
+
+  await readResponse(response)
+}
+
+// REMOVE SHARED ITEM
+export async function removeGroupItem(
+  groupId: number,
+  itemId: number
+): Promise<void> {
+  const response = await apiRequest(
+    `/api/groups/${groupId}/items/${itemId}`,
+    {
+      method: "DELETE",
+    }
+  )
+
+  await readResponse(response)
+}
