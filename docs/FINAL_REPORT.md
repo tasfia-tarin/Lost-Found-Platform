@@ -1003,4 +1003,474 @@ The known variable names include:
 - `JWT_SECRET_KEY`
 - `PASSWORD_PEPPER`
 
-Their actual values must never
+Their actual values must never be committed to the GitHub repository or exposed in frontend source code. They should be configured securely in the deployment environment.
+
+### C9.2 API Security
+
+The backend uses authentication and authorization dependencies to protect restricted API endpoints.
+
+Important security practices include:
+
+- Validating incoming request data.
+- Checking authentication before protected operations.
+- Checking user roles and permissions.
+- Restricting administrative endpoints.
+- Avoiding exposure of sensitive database credentials.
+- Returning appropriate error responses for unauthorized requests.
+
+### C9.3 Database Security
+
+The application uses Supabase PostgreSQL for data storage.
+
+The backend connects to the database using a connection string stored in an environment variable. Database credentials should not be hardcoded into application source files.
+
+Access to database operations should be controlled through the backend application.
+
+### C9.4 Security Limitations
+
+Although the project contains authentication, RBAC, audit, and security-related modules, the complete security of the application depends on correct configuration and testing.
+
+The following areas should be verified before production use:
+
+- Password hashing configuration.
+- JWT expiration and signature validation.
+- Refresh-token handling.
+- Cookie security settings, if cookies are used.
+- Login rate limiting.
+- CSRF protection, if cookie-based authentication is used.
+- Database access permissions.
+- Input validation and error handling.
+
+---
+
+## C10. Testing Strategy
+
+Testing is important to ensure that the application behaves as expected and that its main functionalities work correctly.
+
+The project includes a backend test file:
+
+`backend/tests/test_rbac.py`
+
+This file is intended for testing role-based access control behavior.
+
+### C10.1 Types of Testing
+
+| Testing Type | Purpose |
+|---|---|
+| Unit Testing | Tests individual functions or modules |
+| API Testing | Checks backend endpoints and responses |
+| Integration Testing | Checks communication between frontend, backend, and database |
+| Authentication Testing | Checks login and protected endpoint behavior |
+| Authorization Testing | Checks role and permission restrictions |
+| Build Testing | Checks whether the frontend application builds successfully |
+| Manual Testing | Checks application behavior through the user interface |
+
+### C10.2 API Testing
+
+The API can be tested through the interactive FastAPI documentation.
+
+**API Documentation:**  
+https://2311939-s6.vercel.app/api/docs
+
+The documentation provides an interface for viewing available API routes and sending requests.
+
+### C10.3 CRUD Testing
+
+The main item operations are:
+
+| Operation | HTTP Method | Endpoint | Expected Behavior |
+|---|---|---|---|
+| Create | POST | `/api/items` | Creates a new item |
+| Read List | GET | `/api/items` | Retrieves item records |
+| Read Single | GET | `/api/items/{item_id}` | Retrieves one item, if the route is available |
+| Update | PUT/PATCH | `/api/items/{item_id}` | Updates an item, according to the implemented method |
+| Delete | DELETE | `/api/items/{item_id}` | Deletes an item, if the route is available |
+
+The exact HTTP methods and endpoint availability should be confirmed in the deployed API documentation.
+
+### C10.4 Build Testing
+
+The frontend production build was tested using:
+
+```bash
+npm run build
+```
+
+The build completed successfully during development.
+
+This verifies that the frontend source code could be compiled into a production build at the time of testing.
+
+### C10.5 Testing Limitations
+
+The existence of test files does not automatically mean that all tests have passed.
+
+The final report should include the actual test execution results, including passed and failed tests, before claiming complete test coverage.
+
+---
+
+## C11. Deployment Architecture
+
+The Lost & Found Platform is deployed using Vercel.
+
+### C11.1 Deployment Details
+
+| Component | Platform |
+|---|---|
+| Frontend | Vercel |
+| Backend API | Vercel deployment routing |
+| Database | Supabase PostgreSQL |
+| Source Code | GitHub |
+| API Documentation | FastAPI Swagger UI |
+
+### C11.2 API Routing
+
+The application uses Vercel routing configuration to connect frontend requests with the backend API.
+
+The API routes beginning with `/api/` are forwarded to the FastAPI application.
+
+The frontend handles the remaining application routes.
+
+### C11.3 Deployment URLs
+
+**Live Application:**
+
+https://2311939-s6.vercel.app/
+
+**API Base URL:**
+
+https://2311939-s6.vercel.app/api
+
+**API Documentation:**
+
+https://2311939-s6.vercel.app/api/docs
+
+### C11.4 Environment Configuration
+
+The backend uses environment variables for database and authentication configuration.
+
+Known environment variable names include:
+
+- `DATABASE_URL`
+- `JWT_SECRET_KEY`
+- `PASSWORD_PEPPER`
+
+Actual secret values are not included in this report for security reasons.
+
+---
+
+# 5. Part D: Screenshots of the Deployed Application
+
+This section is intended to demonstrate the appearance and functionality of the deployed Lost & Found Platform.
+
+Screenshots should be captured directly from the running application and inserted under the corresponding headings.
+
+## D1. Homepage
+
+**Figure 2: Lost & Found Platform Homepage**
+
+[Insert screenshot of the deployed homepage here.]
+
+The homepage provides access to the main features of the Lost & Found Platform.
+
+## D2. Item Creation Form
+
+**Figure 3: Item Creation Form**
+
+[Insert screenshot of the item creation form here.]
+
+The item creation form collects information such as:
+
+- Item Title
+- Category
+- Status
+- Location
+- Description
+- Contact Information
+
+Users can submit the form to create an item record.
+
+## D3. Item List
+
+**Figure 4: Item List Interface**
+
+[Insert screenshot of the item list here.]
+
+The item list displays available item records retrieved from the backend.
+
+## D4. Item Details
+
+**Figure 5: Item Details Interface**
+
+[Insert screenshot of the item details interface here.]
+
+The details interface presents information about a selected item.
+
+## D5. Item Update and Delete
+
+**Figure 6: Item Management Interface**
+
+[Insert screenshot showing the available edit and delete controls here.]
+
+The application provides item management controls for updating or deleting records, according to the implemented permissions.
+
+## D6. User Registration
+
+**Figure 7: User Registration Interface**
+
+[Insert screenshot of the signup page here.]
+
+The registration interface allows new users to submit the information required to create an account.
+
+## D7. User Login
+
+**Figure 8: User Login Interface**
+
+[Insert screenshot of the login page here.]
+
+The login interface allows registered users to submit their credentials.
+
+## D8. Group Management
+
+**Figure 9: Group Management Interface**
+
+[Insert screenshot of the Group Management component here.]
+
+The Group Management interface supports group creation, listing, and deletion through the available frontend functionality.
+
+Backend routes also provide group-member and permission-related operations.
+
+## D9. Administrative Dashboard
+
+**Figure 10: Administrative Dashboard**
+
+[Insert screenshot of the Admin Dashboard here.]
+
+The project includes an administrative dashboard component and backend administrative routes. Insert a screenshot showing the actual available dashboard functionality.
+
+## D10. API Documentation
+
+**Figure 11: FastAPI Swagger Documentation**
+
+[Insert screenshot of https://2311939-s6.vercel.app/api/docs here.]
+
+The Swagger interface provides interactive documentation for the backend API endpoints.
+
+## D11. Database Connectivity
+
+**Figure 12: Database Connectivity Test**
+
+[Insert screenshot of the successful `/api/db-test` response here.]
+
+The database connectivity endpoint was previously tested and returned a successful test result.
+
+---
+
+# 6. Part E: Project Management and Conclusion
+
+## E1. Project Development Process
+
+The project was developed incrementally. Development tasks were divided into smaller features to make implementation, testing, and version control easier.
+
+The main development stages included:
+
+1. Initial project setup.
+2. Frontend development.
+3. Backend API development.
+4. Database integration.
+5. CRUD functionality.
+6. Authentication-related development.
+7. Role-based access control.
+8. Group management.
+9. Administrative backend development.
+10. Deployment and final documentation.
+
+## E2. GitHub and Version Control
+
+Git and GitHub were used to manage the project source code and track development progress.
+
+The project repository is:
+
+https://github.com/tasfia-tarin/Lost-Found-Platform
+
+Feature branches and pull requests were used to organize development work.
+
+### E2.1 Major Pull Requests
+
+| Pull Request | Description |
+|---|---|
+| PR #4 | Backend CRUD implementation |
+| PR #6 | Frontend CRUD implementation |
+| PR #7 | Vercel API routing configuration |
+| PR #10 | Folder structure reorganization |
+| PR #11 | Group management and related functionality |
+| PR #12 | Final project report update |
+
+These pull requests helped organize code changes and maintain a clear development history.
+
+## E3. Challenges Faced
+
+Several technical challenges were encountered during the development process.
+
+### E3.1 Frontend and Backend Integration
+
+Connecting the React frontend with the FastAPI backend required proper API routing and request handling.
+
+The application needed to ensure that frontend requests reached the correct backend endpoints after deployment.
+
+### E3.2 Database Connectivity
+
+Connecting the backend with Supabase PostgreSQL required correct database configuration and environment variable setup.
+
+Database connectivity was tested through a dedicated API endpoint.
+
+### E3.3 Deployment Configuration
+
+Deploying the frontend and backend through Vercel required proper routing configuration.
+
+The API routing configuration was adjusted to ensure that requests beginning with `/api/` reached the FastAPI backend.
+
+### E3.4 Project Structure
+
+Initially, several application responsibilities were placed in large source files.
+
+The project structure was later reorganized into separate components, services, routes, and modules to improve maintainability.
+
+### E3.5 Authentication and Authorization
+
+Authentication and role-based access control required separate backend modules and permission checks.
+
+Organizing these features into dedicated modules helped separate authentication, authorization, and application logic.
+
+## E4. Learning Outcomes
+
+Throughout the development of the Lost & Found Platform, several important technical skills were practiced.
+
+The major learning outcomes include:
+
+- Understanding React component-based development.
+- Using TypeScript in frontend applications.
+- Developing REST APIs with FastAPI.
+- Understanding HTTP methods and status codes.
+- Connecting a backend application with PostgreSQL.
+- Working with Supabase.
+- Understanding authentication and JWT-related concepts.
+- Implementing role-based and permission-based access control.
+- Organizing a software project into modular folders.
+- Using Git and GitHub for version control.
+- Deploying a web application through Vercel.
+- Understanding the importance of API testing and documentation.
+
+## E5. Future Improvements
+
+The platform can be improved further by introducing additional features.
+
+Possible future improvements include:
+
+1. Advanced search and filtering options.
+2. Image uploads for lost and found items.
+3. Improved item categorization.
+4. Email notifications for relevant item reports.
+5. More detailed user profile management.
+6. Improved group-member management interface.
+7. More complete administrative dashboard functionality.
+8. Enhanced security monitoring.
+9. Additional automated test coverage.
+10. Improved mobile responsiveness.
+
+These improvements could make the platform more useful and scalable.
+
+## E6. Conclusion
+
+The Lost & Found Platform was developed to provide a centralized web-based solution for reporting and managing lost and found belongings.
+
+The project combines React, TypeScript, FastAPI, Supabase PostgreSQL, and Vercel to create a full-stack web application.
+
+During development, the application was expanded beyond its initial CRUD functionality through improvements in project organization, authentication-related modules, role-based access control, group management, and administrative backend functionality.
+
+The project provided practical experience in frontend development, backend API development, database integration, security concepts, version control, and deployment.
+
+Overall, the project demonstrates the application of web development concepts learned throughout the CSE309 course and provides a foundation for future improvements.
+
+---
+
+# 7. Appendix
+
+## Appendix A: Project Repository
+
+GitHub Repository:
+
+https://github.com/tasfia-tarin/Lost-Found-Platform
+
+The repository contains the frontend, backend, and project documentation.
+
+## Appendix B: Live Application
+
+Live Application:
+
+https://2311939-s6.vercel.app/
+
+## Appendix C: API Documentation
+
+FastAPI Swagger Documentation:
+
+https://2311939-s6.vercel.app/api/docs
+
+## Appendix D: Important Backend Modules
+
+| File | Responsibility |
+|---|---|
+| `main.py` | Main FastAPI application |
+| `schemas.py` | Application request/response schemas |
+| `auth/routes.py` | Authentication routes |
+| `auth/dependencies.py` | Authentication dependencies |
+| `auth/passwords.py` | Password-related functionality |
+| `auth/tokens.py` | Token-related functionality |
+| `auth/rbac.py` | Role-based access control |
+| `admin/routes.py` | Administrative API routes |
+| `crud/item_crud.py` | Item database operations |
+| `crud/user_crud.py` | User database operations |
+| `crud/group_crud.py` | Group database operations |
+| `crud/audit_crud.py` | Audit log database operations |
+| `crud/security_crud.py` | Security log database operations |
+| `routers/items.py` | Item API routes |
+| `routers/groups.py` | Group API routes |
+| `services/item_service.py` | Item-related service logic |
+| `tests/test_rbac.py` | RBAC test module |
+
+## Appendix E: Important Frontend Components
+
+| File | Responsibility |
+|---|---|
+| `App.tsx` | Main application component |
+| `main.tsx` | Frontend entry point |
+| `ItemForm.tsx` | Item creation and editing form |
+| `ItemList.tsx` | Item list display |
+| `ItemCard.tsx` | Individual item presentation |
+| `ItemDetails.tsx` | Item details display |
+| `GroupManagement.tsx` | Group management interface |
+| `Login.tsx` | Login interface |
+| `Signup.tsx` | Registration interface |
+| `AdminDashboard.tsx` | Administrative dashboard component |
+| `api.ts` | Frontend API communication |
+| `item.ts` | Item-related TypeScript types |
+
+## Appendix F: Final Submission Checklist
+
+Before submitting the final report, the following items should be checked:
+
+- [ ] Verify the spelling of the university and course information.
+- [ ] Confirm the student name, ID, section, and team number.
+- [ ] Insert actual application screenshots.
+- [ ] Insert the API documentation screenshot.
+- [ ] Insert the database connectivity test screenshot.
+- [ ] Verify the final API endpoint methods in Swagger.
+- [ ] Verify the database column types and constraints.
+- [ ] Verify JWT configuration from the source code.
+- [ ] Run the available automated tests and record the actual results.
+- [ ] Verify the authentication and authorization behavior.
+- [ ] Check that all project links are accessible.
+- [ ] Remove any remaining drafting instructions before submission.
+- [ ] Ensure that no passwords, tokens, or secret environment variable values appear in the report.
+
+---
+
